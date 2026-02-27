@@ -7,21 +7,13 @@
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #0f0f0f;
-    --surface: #181818;
-    --surface2: #222222;
-    --border: #2a2a2a;
-    --accent: #c9f03d;
-    --accent2: #f0c93d;
-    --text: #f0ede8;
-    --muted: #888;
-    --danger: #f04d4d;
+    --bg: #0f0f0f; --surface: #181818; --surface2: #222222; --border: #2a2a2a;
+    --accent: #c9f03d; --accent2: #f0c93d; --text: #f0ede8; --muted: #888; --danger: #f04d4d;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; min-height: 100vh; overflow-x: hidden; }
-  body::before { content: ''; position: fixed; inset: 0; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E"); pointer-events: none; z-index: 0; opacity: 0.4; }
   .app { position: relative; z-index: 1; max-width: 900px; margin: 0 auto; padding: 2rem 1.5rem; }
-  header { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 2.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--border); }
+  header { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 2.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--border); flex-wrap: wrap; gap: 1rem; }
   .logo { font-family: 'Playfair Display', serif; font-size: 1.8rem; font-weight: 700; line-height: 1; }
   .logo span { color: var(--accent); }
   .header-right { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; justify-content: flex-end; }
@@ -102,16 +94,15 @@
   .report-section h2 { font-family: 'Playfair Display', serif; font-size: 1.2rem; }
   .btn-close { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 0.3rem 0.7rem; color: var(--muted); font-size: 0.78rem; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: color 0.15s; }
   .btn-close:hover { color: var(--text); }
-  .report-content { font-family: 'Courier New', monospace; font-size: 0.82rem; line-height: 1.8; white-space: pre-wrap; color: var(--text); background: var(--surface2); border-radius: 10px; padding: 1rem; }
+  .report-content { font-family: 'Courier New', monospace; font-size: 0.82rem; line-height: 1.8; white-space: pre-wrap; color: var(--text); background: var(--surface2); border-radius: 10px; padding: 1rem; overflow-x: auto; }
   .btn-report { width: 100%; background: var(--surface2); border: 1px dashed var(--border); border-radius: 12px; padding: 0.85rem; color: var(--muted); font-size: 0.85rem; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all 0.2s; }
   .btn-report:hover { border-color: var(--accent); color: var(--accent); }
-  .toast { position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%) translateY(10px); background: var(--accent); color: #000; padding: 0.65rem 1.25rem; border-radius: 100px; font-weight: 600; font-size: 0.82rem; opacity: 0; transition: all 0.3s; pointer-events: none; z-index: 100; }
+  .toast { position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%) translateY(10px); background: var(--accent); color: #000; padding: 0.65rem 1.25rem; border-radius: 100px; font-weight: 600; font-size: 0.82rem; opacity: 0; transition: all 0.3s; pointer-events: none; z-index: 100; max-width: 90vw; text-align: center; }
   .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
   .toast.error { background: var(--danger); color: #fff; }
   @media (max-width: 600px) {
     .summary { grid-template-columns: 1fr; }
     .form-grid { grid-template-columns: 1fr; }
-    .header-right { flex-direction: column; align-items: flex-end; gap: 0.4rem; }
   }
 </style>
 </head>
@@ -133,7 +124,7 @@
   </header>
 
   <div class="summary">
-    <div class="card total"><div class="card-label">Total do Mês</div><div class="card-value" id="totalValue">R$ 0</div></div>
+    <div class="card total"><div class="card-label">Total do Mês</div><div class="card-value" id="totalValue">R$ 0,00</div></div>
     <div class="card count"><div class="card-label">Lançamentos</div><div class="card-value" id="countValue">0</div></div>
     <div class="card avg"><div class="card-label">Maior Gasto</div><div class="card-value" id="maxValue">—</div></div>
   </div>
@@ -186,6 +177,7 @@
 <div class="toast" id="toast"></div>
 
 <script>
+// ─── CONFIGURAÇÃO ────────────────────────────────────────────────────────────
 const API_URL = 'https://script.google.com/macros/s/AKfycbz2VLEGkPWpncjZ739GtSpz5Q2lcIZ9r8eky789wHaQk-OgRL9eSmh8hhB27Hb2azKB/exec';
 
 const CATEGORIES = {
@@ -206,6 +198,7 @@ let viewMonth = new Date().getMonth();
 let filterCat = 'all';
 let selectedCat = 'alimentacao';
 
+// ─── SYNC STATUS ─────────────────────────────────────────────────────────────
 function setSyncStatus(status, label) {
   document.getElementById('syncDot').className = 'sync-dot ' + status;
   document.getElementById('syncLabel').textContent = label;
@@ -215,15 +208,42 @@ function showToast(msg, isError) {
   const el = document.getElementById('toast');
   el.textContent = msg;
   el.className = 'toast show' + (isError ? ' error' : '');
-  setTimeout(() => { el.className = 'toast'; }, 2500);
+  setTimeout(() => { el.className = 'toast'; }, 2800);
 }
 
+// ─── JSONP (contorna CORS para GET) ──────────────────────────────────────────
+function jsonpFetch(url) {
+  return new Promise((resolve, reject) => {
+    const cbName = 'cb_' + Date.now();
+    const script = document.createElement('script');
+    const timeout = setTimeout(() => {
+      cleanup();
+      reject(new Error('timeout'));
+    }, 10000);
+
+    window[cbName] = (data) => {
+      clearTimeout(timeout);
+      cleanup();
+      resolve(data);
+    };
+
+    function cleanup() {
+      delete window[cbName];
+      if (script.parentNode) script.parentNode.removeChild(script);
+    }
+
+    script.src = url + (url.includes('?') ? '&' : '?') + 'callback=' + cbName;
+    script.onerror = () => { clearTimeout(timeout); cleanup(); reject(new Error('script error')); };
+    document.head.appendChild(script);
+  });
+}
+
+// ─── LOAD FROM SHEETS ────────────────────────────────────────────────────────
 async function loadFromSheets() {
   setSyncStatus('loading', 'Sincronizando...');
   try {
-    const res = await fetch(API_URL);
-    const data = await res.json();
-    expenses = data.map(row => ({
+    const data = await jsonpFetch(API_URL);
+    expenses = (Array.isArray(data) ? data : []).map(row => ({
       Data: String(row['Data'] || ''),
       Descrição: String(row['Descrição'] || ''),
       Valor: parseFloat(row['Valor']) || 0,
@@ -234,19 +254,25 @@ async function loadFromSheets() {
     render();
   } catch(err) {
     setSyncStatus('error', 'Erro de conexão');
-    showToast('Erro ao carregar. Verifique a conexão.', true);
+    showToast('Erro ao carregar dados.', true);
     render();
   }
 }
 
+// ─── POST TO SHEETS (no-cors + queue) ────────────────────────────────────────
 async function postToSheets(action, data) {
-  const res = await fetch(API_URL, {
+  // Usa fetch com no-cors — não recebemos resposta, mas o dado chega ao script
+  await fetch(API_URL, {
     method: 'POST',
+    mode: 'no-cors',
+    headers: { 'Content-Type': 'text/plain' },
     body: JSON.stringify({ action, data }),
   });
-  return res.json();
+  // Aguarda 1.5s para o script processar antes de recarregar
+  await new Promise(r => setTimeout(r, 1500));
 }
 
+// ─── MONTH NAV ───────────────────────────────────────────────────────────────
 function updateMonthLabel() {
   document.getElementById('monthLabel').textContent = MONTHS[viewMonth] + ' ' + viewYear;
 }
@@ -259,12 +285,14 @@ function changeMonth(dir) {
   render();
 }
 
+// ─── TABS ────────────────────────────────────────────────────────────────────
 function switchTab(tab) {
   document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', (i===0)===(tab==='ai')));
   document.getElementById('aiTab').classList.toggle('active', tab==='ai');
   document.getElementById('formTab').classList.toggle('active', tab==='form');
 }
 
+// ─── CATEGORY DOTS ───────────────────────────────────────────────────────────
 function buildCatDots() {
   const container = document.getElementById('catDots');
   container.innerHTML = '';
@@ -280,30 +308,32 @@ function buildCatDots() {
   });
 }
 
+// ─── DETECT CATEGORY ─────────────────────────────────────────────────────────
 function detectCategory(text) {
   const lower = text.toLowerCase();
-  const catMap = {
-    alimentacao: ['lanche','comida','restaurante','mercado','supermercado','almoço','jantar','café','cafeteria','refeição','gizelda','pizza','hamburguer','padaria','açaí','sorvete','sushi','lanchonete','ifood','delivery','acai'],
-    transporte:  ['gasolina','uber','99','combustível','ônibus','metro','metrô','passagem','taxi','táxi','estacionamento','pedágio','moto','posto'],
+  const map = {
+    alimentacao: ['lanche','comida','restaurante','mercado','supermercado','almoço','jantar','café','cafeteria','refeição','gizelda','pizza','hamburguer','padaria','açaí','sorvete','sushi','lanchonete','ifood','delivery','acai','snack'],
+    transporte:  ['gasolina','uber','99','combustível','ônibus','metro','metrô','passagem','taxi','táxi','estacionamento','pedágio','moto','posto','combustivel'],
     familia:     ['família','familia','filho','filha','escola','criança','casa','conta','luz','água','internet','aluguel'],
     saude:       ['médico','medico','farmácia','farmacia','remédio','remedio','consulta','dentista','hospital','exame','plano','saúde','saude'],
     lazer:       ['cinema','teatro','show','viagem','hotel','passeio','parque','jogo','netflix','spotify','entretenimento'],
     funcionaria: ['funcionária','funcionaria','empregada','diarista','salário','salario','pagamento'],
     pessoal:     ['roupa','sapato','cabelo','beleza','personal','academia','livro','curso'],
   };
-  for (const [cat, keywords] of Object.entries(catMap)) {
+  for (const [cat, keywords] of Object.entries(map)) {
     if (keywords.some(k => lower.includes(k))) return cat;
   }
   return 'pessoal';
 }
 
+// ─── AI PARSE ────────────────────────────────────────────────────────────────
 async function parseAI() {
   const input = document.getElementById('aiInput');
   const text = input.value.trim();
   if (!text) return;
 
   const valMatch = text.match(/(\d+([.,]\d{1,2})?)/);
-  if (!valMatch) { showToast('Não encontrei um valor. Ex: "gastei 80 reais..."', true); return; }
+  if (!valMatch) { showToast('Não encontrei valor. Ex: "gastei 80 reais..."', true); return; }
   const value = parseFloat(valMatch[1].replace(',','.'));
 
   let desc = text
@@ -319,19 +349,25 @@ async function parseAI() {
   const btn = document.getElementById('aiBtn');
   btn.disabled = true;
   setSyncStatus('loading', 'Salvando...');
+
+  // Optimistic update
+  expenses.push({ Data: today, Descrição: desc, Valor: value, Categoria: catLabel, Observação: '' });
+  render();
+  input.value = '';
+  showToast('✓ ' + fmt(value) + ' adicionado em ' + catLabel);
+
   try {
     await postToSheets('add', { Data: today, Descrição: desc, Valor: value, Categoria: catLabel, Observação: '' });
-    input.value = '';
-    showToast('✓ ' + fmt(value) + ' salvo em ' + catLabel);
     await loadFromSheets();
   } catch(err) {
-    showToast('Erro ao salvar. Tente novamente.', true);
+    showToast('Erro ao sincronizar com a planilha.', true);
     setSyncStatus('error', 'Erro');
   } finally {
     btn.disabled = false;
   }
 }
 
+// ─── FORM ADD ────────────────────────────────────────────────────────────────
 async function addFromForm() {
   const desc = document.getElementById('fDesc').value.trim();
   const val  = parseFloat(document.getElementById('fVal').value);
@@ -346,43 +382,56 @@ async function addFromForm() {
   const dateStr = d.toLocaleDateString('pt-BR');
   const catLabel = CATEGORIES[selectedCat].label;
 
+  // Optimistic update
+  expenses.push({ Data: dateStr, Descrição: desc, Valor: val, Categoria: catLabel, Observação: note });
+  render();
+  document.getElementById('fDesc').value = '';
+  document.getElementById('fVal').value = '';
+  document.getElementById('fNote').value = '';
+  showToast('✓ ' + fmt(val) + ' adicionado em ' + catLabel);
+
   setSyncStatus('loading', 'Salvando...');
   try {
     await postToSheets('add', { Data: dateStr, Descrição: desc, Valor: val, Categoria: catLabel, Observação: note });
-    document.getElementById('fDesc').value = '';
-    document.getElementById('fVal').value = '';
-    document.getElementById('fNote').value = '';
-    showToast('✓ ' + fmt(val) + ' salvo em ' + catLabel);
     await loadFromSheets();
   } catch(err) {
-    showToast('Erro ao salvar. Tente novamente.', true);
+    showToast('Erro ao sincronizar com a planilha.', true);
     setSyncStatus('error', 'Erro');
   }
 }
 
-async function removeExpense(uniqueKey) {
-  const e = expenses.find(x => x._key === uniqueKey);
+// ─── REMOVE ──────────────────────────────────────────────────────────────────
+async function removeExpense(idx) {
+  const list = getMonthExpenses();
+  const e = list[idx];
   if (!e) return;
   if (!confirm('Remover "' + e.Descrição + '" (' + fmt(e.Valor) + ')?')) return;
+
+  // Optimistic remove
+  const globalIdx = expenses.indexOf(e);
+  if (globalIdx > -1) expenses.splice(globalIdx, 1);
+  render();
+  showToast('Gasto removido');
+
   setSyncStatus('loading', 'Removendo...');
   try {
     await postToSheets('delete', { Data: e.Data, Descrição: e.Descrição, Categoria: e.Categoria });
-    showToast('Gasto removido');
     await loadFromSheets();
   } catch(err) {
-    showToast('Erro ao remover.', true);
+    showToast('Erro ao sincronizar.', true);
     setSyncStatus('error', 'Erro');
   }
 }
 
+// ─── HELPERS ─────────────────────────────────────────────────────────────────
 function fmt(val) {
   return 'R$ ' + val.toFixed(2).replace('.',',').replace(/\B(?=(\d{3})+(?!\d))/g,'.');
 }
 
 function parseDateBR(str) {
   if (!str) return null;
-  const parts = str.split('/');
-  if (parts.length === 3) return new Date(parseInt(parts[2]), parseInt(parts[1])-1, parseInt(parts[0]));
+  const p = str.split('/');
+  if (p.length === 3) return new Date(parseInt(p[2]), parseInt(p[1])-1, parseInt(p[0]));
   return new Date(str);
 }
 
@@ -397,9 +446,9 @@ function catKeyFromLabel(label) {
   return Object.entries(CATEGORIES).find(([k,v]) => v.label === label)?.[0] || 'pessoal';
 }
 
+// ─── RENDER ──────────────────────────────────────────────────────────────────
 function render() {
   const list = getMonthExpenses();
-  list.forEach((e,i) => e._key = i + '_' + e.Data + '_' + e.Descrição);
 
   const total = list.reduce((s,e)=>s+e.Valor,0);
   document.getElementById('totalValue').textContent = fmt(total);
@@ -444,17 +493,18 @@ function render() {
   const filtered = filterCat==='all' ? list : list.filter(e => catKeyFromLabel(e.Categoria)===filterCat);
   const listEl = document.getElementById('expenseList');
   if (!filtered.length) {
-    listEl.innerHTML = '<div class="empty-state">Nenhum gasto encontrado ✦</div>';
+    listEl.innerHTML = '<div class="empty-state">Nenhum gasto encontrado &#10022;</div>';
     return;
   }
   const sorted = [...filtered].sort((a,b)=>parseDateBR(b.Data)-parseDateBR(a.Data));
-  listEl.innerHTML = sorted.map(e => {
+  listEl.innerHTML = sorted.map((e,i) => {
     const key = catKeyFromLabel(e.Categoria);
     const cat = CATEGORIES[key] || { label: e.Categoria, color: '#888' };
-    return '<div class="expense-item"><div class="cat-badge" style="background:'+cat.color+'"></div><div class="expense-info"><div class="expense-desc">'+e.Descrição+'</div><div class="expense-meta">'+cat.label+' · '+e.Data+(e.Observação?' · '+e.Observação:'')+'</div></div><div class="expense-value">−'+fmt(e.Valor)+'</div><button class="btn-remove" onclick="removeExpense(\''+e._key+'\')" title="Remover">✕</button></div>';
+    return '<div class="expense-item"><div class="cat-badge" style="background:'+cat.color+'"></div><div class="expense-info"><div class="expense-desc">'+e.Descrição+'</div><div class="expense-meta">'+cat.label+' &middot; '+e.Data+(e.Observação?' &middot; '+e.Observação:'')+'</div></div><div class="expense-value">&minus;'+fmt(e.Valor)+'</div><button class="btn-remove" onclick="removeExpense('+i+')" title="Remover">&#10005;</button></div>';
   }).join('');
 }
 
+// ─── REPORT ──────────────────────────────────────────────────────────────────
 function generateReport() {
   const list = getMonthExpenses();
   const total = list.reduce((s,e)=>s+e.Valor,0);
@@ -491,7 +541,7 @@ function closeReport() {
   document.getElementById('reportSection').classList.remove('visible');
 }
 
-// Init
+// ─── INIT ────────────────────────────────────────────────────────────────────
 document.getElementById('fDate').value = new Date().toISOString().split('T')[0];
 updateMonthLabel();
 buildCatDots();
